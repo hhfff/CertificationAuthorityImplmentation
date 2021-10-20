@@ -2,7 +2,8 @@
 Certificate Authority (CA) verifies websites (and other entities) so that you know who you’re communicating with online
 
 # Project setup
-### Create a virtual python and download necessary dependencies
+
+### Create a virtual python and download necessary dependencies defne in requirement.txt
 ```
 $ python3 -m venv venv/
 $ source venv/bin/activate  
