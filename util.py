@@ -36,11 +36,11 @@ def load_rsa_private_key(dir,name):
     return key
 
 def save_X509_cert(dir,name,cert):
-    with open(f"{dir}{name}.cert", "wb") as f:
+    with open(f"{dir}{name}.crt", "wb") as f:
             f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 def load_X509_cert(dir,name):
-    f=open(f"{dir}{name}.cert","rb")
+    f=open(f"{dir}{name}.crt","rb")
     cert = x509.load_pem_x509_certificate(f.read())
     return cert
 
@@ -52,13 +52,12 @@ def verify_cert_signature(cert, public_key):
     except InvalidSignature:
         return False
 
-#only make 1 for all
-def save_cert_revocation_list(crl):
-    with open(f"{CA_data_path}crl.pem", "wb") as f:
-        f.write(cert.public_bytes(serialization.Encoding.PEM))
+def save_cert_revocation_list(crl,name):
+    with open(f"{CA_data_path}{name}.crl", "wb") as f:
+        f.write(crl.public_bytes(serialization.Encoding.PEM))
 
-def load_cert_revocation_list():
-    f=open(f"{CA_data_path}crl.pem","rb")
+def load_cert_revocation_list(name):
+    f=open(f"{CA_data_path}{name}.crl","rb")
     crl = x509.load_pem_x509_crl(f.read())
     return crl
 

@@ -23,8 +23,10 @@ You configure your server to use that certificate, combined with your private ke
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
-root_CA=CertificationAuthority('root')
+root_CA=CertificationAuthority(name='root',type='root')
 
+#================client 1=============
+print("client 1")
 rsa_key=util.generate_ras_key()
 rsa_key.public_key()
 csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
@@ -33,7 +35,7 @@ csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"California"),
     x509.NameAttribute(NameOID.LOCALITY_NAME, u"San Francisco"),
     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"My Company"),
-    x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
+    x509.NameAttribute(NameOID.COMMON_NAME, u"client1.com"),
 ])).add_extension(
     x509.SubjectAlternativeName([
         # Describe what sites we want this certificate for.
@@ -49,11 +51,58 @@ cert_pub=root_CA.issue_certificate(csr)
 
 #reconstruct from cert public byte
 cert = x509.load_pem_x509_certificate(cert_pub)
+print("applicant: "+cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value)
+print("issuer: "+cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value)
+print(cert.not_valid_before)
 print(cert.not_valid_after)
+
 # verify signature
 ca_public_key=root_CA.get_public_key()
+print("validate: "+ str(util.verify_cert_signature(cert,ca_public_key)))
 
-print(util.verify_cert_signature(cert,ca_public_key))
+#================client 2=============
+print("client 2")
+rsa_key2=util.generate_ras_key()
+rsa_key2.public_key()
+csr2 = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
+    # Provide various details about who we are.
+    x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+    x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"California"),
+    x509.NameAttribute(NameOID.LOCALITY_NAME, u"San Francisco"),
+    x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"My Company"),
+    x509.NameAttribute(NameOID.COMMON_NAME, u"client2.com"),
+])).add_extension(
+    x509.SubjectAlternativeName([
+        # Describe what sites we want this certificate for.
+        x509.DNSName(u"mysite.com"),
+        x509.DNSName(u"www.mysite.com"),
+        x509.DNSName(u"subdomain.mysite.com"),
+    ]),
+    critical=False,
+# Sign the CSR with our private key. is applicant private key
+).sign(rsa_key2, hashes.SHA256())
 
+cert_pub2=root_CA.issue_certificate(csr2)
+
+#reconstruct from cert public byte
+cert2 = x509.load_pem_x509_certificate(cert_pub2)
+print("applicant: "+cert2.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value)
+print("issuer: "+cert2.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value)
+print(cert2.not_valid_before)
+print(cert2.not_valid_after)
+
+# verify signature
+ca_public_key2=root_CA.get_public_key()
+print("validate: "+ str(util.verify_cert_signature(cert2,ca_public_key2)))
+
+# revoke
+print("both not revoke")
+print("is cert1 revoke? "+str(root_CA.check_certificate_revoke_status(cert)))
+print("is cert2 revoke? "+str(root_CA.check_certificate_revoke_status(cert2)))
+
+print("cert 2 revoke")
+root_CA.revocate_certificate(cert2)
+print("is cert1 revoke? "+str(root_CA.check_certificate_revoke_status(cert)))
+print("is cert2 revoke? "+str(root_CA.check_certificate_revoke_status(cert2)))
 
 
