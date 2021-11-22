@@ -22,7 +22,7 @@ class CertificationAuthority():
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"{name}".format(name=self.name)), #only this line different for different CA
             x509.NameAttribute(NameOID.COMMON_NAME, u"ntu.com"),
         ])
-        if os.path.isfile(f"{util.CA_data_path}{name}_key.pem"):
+        if os.path.isfile(f"{util.CA_data_path}{name}.key"):
             print("load")
             self.rsa_private_key=util.load_rsa_private_key(util.CA_data_path,name)
             # load certificate
@@ -70,16 +70,16 @@ class CertificationAuthority():
 
     #for root server only
     def self_sign_cert(self):
-        key=util.generate_ras_key()
-        util.save_rsa_private_key(util.CA_data_path,self.name,key)
+        self.rsa_private_key=util.generate_ras_key()
+        util.save_rsa_private_key(util.CA_data_path,self.name,self.rsa_private_key)
         subject = self.issuer
 
-        cert = x509.CertificateBuilder().subject_name(
+        self.cert = x509.CertificateBuilder().subject_name(
                 subject
             ).issuer_name(
                 self.issuer
             ).public_key(
-                key.public_key()
+                self.rsa_private_key.public_key()
             ).serial_number(
                 x509.random_serial_number()
             ).not_valid_before(
@@ -91,10 +91,10 @@ class CertificationAuthority():
                 x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
                 critical=False,
         # Sign our certificate with our private key, which is CA private key
-        ).sign(key, hashes.SHA256())
+        ).sign(self.rsa_private_key, hashes.SHA256())
         # Write our certificate out to disk.
-        util.save_X509_cert(util.CA_data_path,self.name,cert)
-        
+        util.save_X509_cert(util.CA_data_path,self.name,self.cert)
+    
         
 
         
