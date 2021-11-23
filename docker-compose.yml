@@ -1,0 +1,28 @@
+version: "3.3"  # optional since v1.27.0
+services:
+  ca_root:
+    container_name: ca_root
+    ports:
+      - "8000:80"
+    image: cav1:latest
+    restart: unless-stopped
+    environment:
+      - CA_NAME=root
+      - CA_TYPE=root
+      - CA_CUR_ENV=server
+      - CA_TOP_NAME=nil
+  ca1:
+    container_name: ca1
+    ports:
+      - "8001:80"
+    image: cav1:latest
+    restart: unless-stopped
+    environment:
+      - CA_NAME=ca1
+      - CA_TYPE=intermediate
+      - CA_CUR_ENV=server
+      - CA_TOP_NAME=ca_root
+networks:
+    default:
+       external:
+         name: ca_network
