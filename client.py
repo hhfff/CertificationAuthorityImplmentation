@@ -24,4 +24,3 @@ csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
 # Sign the CSR with our private key. is applicant private key
 ).sign(rsa_key, hashes.SHA256())
 
-
