@@ -2,8 +2,11 @@
 Through this project, we hope to understand more about Certification Authority (CA), use case of digital certificates and also why is digital certificates an important pillar in the internet infrastructure today. 
 
 Key objectives of this project:
+
 -Background study on CA and digital certificates
+
 -Building a X509 digital certificate that support certification and revocation of submitted public keys, and api for certificate verification
+
 -Also supports Hierarchical Certificate Issue and Revocation, and key public generation
 
 # Research
