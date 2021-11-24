@@ -7,7 +7,7 @@ Key objectives of this project:
 
 -Building a X509 digital certificate that support certification and revocation of submitted public keys, and api for certificate verification
 
--Also supports Hierarchical Certificate Issue and Revocation, and key public generation
+-Also supports Hierarchical Certificate Issue and Revocation, and public key generation
 
 # Research
 Certification Authority (CA) are credible entities that issues digital certificates. Digital certificates contains the identity of an entity online and this identity is validated by a CA. The role of a CA is important as it allows trusted transactions to happen on the internet. The easiest way for users to identify if they are visiting an official website is to look at the issued certificate of the particular website.
@@ -23,6 +23,7 @@ File:Chain Of Trust.svg - Wikimedia Commons. (2020). Retrieved 24 November 2021,
 The certificate authority use 3-tier hierarchy, there is a root CA and two levels of intermediate CAs, in which the lowest layer will issue certificate to end entities.
 
 ![Screenshot from 2021-11-24 12-12-43](https://user-images.githubusercontent.com/7097606/143174026-dfc7c921-7582-4cf2-82c8-0cfbc98232a7.png)
+
 This project use docker-compose to deploy all server in a standalone machine, to mimic the actual server deployment, but we are using port instead of domain name. Each server  communicate to each other in the ca_network by using http://hostname:80. The hostname refer to ca_root, ca1  indicate in the image above. 
 
 **The intermediate CA will generate RSA key and get certificate from 1 level above when first time called, and save for later use. Only ca_root use self signed certificate when first time called.**
