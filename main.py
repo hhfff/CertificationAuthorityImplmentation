@@ -56,13 +56,13 @@ async def issue_cert(csr_file: UploadFile = File(...)):
 async def revoke_cert(crt_file: UploadFile = File(...)):
     cert=x509.load_pem_x509_certificate(crt_file.file.read())
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
-    result=ca.revocate_certificate(cert)
+    result,msg=ca.revocate_certificate(cert)
     if result:
-        return JSONResponse(content={'msg':'success'},status_code=200)
+        return JSONResponse(content={'msg':msg},status_code=200)
     else:
-        return JSONResponse(content={'msg':'Already revoke'},status_code=200)
+        return JSONResponse(content={'msg':msg},status_code=406)
 
-@app.get("/revoke_cert_status",)
+@app.get("/revoke_cert_status")
 async def revoke_cert_status(crt_file: UploadFile = File(...)):
     cert=x509.load_pem_x509_certificate(crt_file.file.read())
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
@@ -70,7 +70,7 @@ async def revoke_cert_status(crt_file: UploadFile = File(...)):
     if result:
         return JSONResponse(content={'msg':'Already revoke'},status_code=200)
     else:
-        return JSONResponse(content={'msg':'Not revoke'},status_code=200)
+        return JSONResponse(content={'msg':'Not revoke'},status_code=406)
 
 
 # todo havent test

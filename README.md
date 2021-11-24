@@ -3,7 +3,7 @@ Certificate Authority (CA) verifies websites (and other entities) so that you kn
 
 
 # Research
-
+ x509 data, hierarchy, ssl cert, 
 # Design
 The certificate authority use 3-tier hierarchy, there is a root CA and two levels of intermediate CAs, in which the lowest layer will issue certificate to end entities.
 
@@ -14,7 +14,6 @@ This project use docker-compose to deploy all server in a standalone machine, to
 
 To get certificate, all client , include intermediate CA, must create certificate sign request(CSR) and sign with their private key. Usually, the certificate issue and revoke require staff to review , but here we just issue and revoke the cert once request.
 
-
 During testing, call the REST API using url http://127.0.0.1:**port**, the port is 8000 for ca_root, 8001 for ca1 and so on. Use http://127.0.0.1:8000/docs to get all API endpoint, all server has same API endpoints.
 
 ## File extension
@@ -24,7 +23,7 @@ All the encoding for file is PEM for storage and transmission, with their hostna
 - certificate revocation list: *.crl
 
 ## Asymmetric algorithm 
-For this demo, we using the RSA algorithm only, with public exponent=65537, key size=2048. But it is possible to change to others such as Elliptic curve, DSA, Ed25519,Ed448, X25519, X448. Some of them are use for Diffie-Hellman key exchange.
+For this demo, we using the RSA algorithm only, with public exponent=65537, key size=2048. But it is possible to change to others such as Elliptic curve, DSA, Ed25519,Ed448. Some of them are use for Diffie-Hellman key exchange.
 
 
 # Development
@@ -73,6 +72,7 @@ $ docker-compose up
 delete the container if dont want it anymore or reset
 ```
 $ docker-compose rm
+$ docker rmi cav1
 ```
 
 check container status and use container uterminal

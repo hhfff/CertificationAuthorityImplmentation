@@ -78,8 +78,14 @@ class CertificationAuthority():
     #csr is CSR certificate object 
     def issue_certificate(self,csr):
         #cert is X.509 Certificate Object¶
-        f=open("./CA_data/issue.txt","a")
-        f.write("issue")
+        # f=open("./CA_data/issue.log","a")
+        # f.write("issue")
+        # f.close()
+
+        #verify applicant signaure against public key
+        # if not csr.is_signature_valid():
+        #     pass
+
         builder = x509.CertificateBuilder().subject_name(
                 csr.subject
             ).issuer_name(
@@ -113,6 +119,15 @@ class CertificationAuthority():
         return cert.public_bytes(serialization.Encoding.PEM)
         
     def revocate_certificate(self,cert_to_revoke):
+        #check cert issuer same as this ca
+        cert_issuer=cert_to_revoke.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        if cert_issuer!= self.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value:
+            return False, f"The certificate was not issue by this server, the issuer is {cert_issuer}"
+        # verify cert signature
+        if not util.verify_cert_signature(cert_to_revoke,self.get_public_key()):
+            return False, "Wrong certificate signature"
+
+
         crl,builder=self.load_crl()
         ret = crl.get_revoked_certificate_by_serial_number(cert_to_revoke.serial_number)
         #if not revoke then add to revoke list
@@ -123,9 +138,9 @@ class CertificationAuthority():
             builder=builder.add_revoked_certificate(revoked_cert)
             crl = builder.sign(private_key=self.rsa_private_key, algorithm=hashes.SHA256())
             util.save_cert_revocation_list(crl,self.name)
-            return True
+            return True, 'Revoke successful'
         else:
-            return False
+            return False, 'Already revoke'
         
     def check_certificate_revoke_status(self,cert_to_check):
         crl,builder=self.load_crl()
