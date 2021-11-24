@@ -62,7 +62,7 @@ async def revoke_cert(crt_file: UploadFile = File(...)):
     else:
         return JSONResponse(content={'msg':'Already revoke'},status_code=200)
 
-@app.post("/revoke_cert_status",)
+@app.get("/revoke_cert_status",)
 async def revoke_cert_status(crt_file: UploadFile = File(...)):
     cert=x509.load_pem_x509_certificate(crt_file.file.read())
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
@@ -74,13 +74,13 @@ async def revoke_cert_status(crt_file: UploadFile = File(...)):
 
 
 # todo havent test
-@app.post("/get_CA_cert")
+@app.get("/get_CA_cert")
 async def ca_cert():
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
     cert_data=ca.get_CA_cert().public_bytes(serialization.Encoding.PEM) #in bytes format
     return PlainTextResponse(cert_data,media_type="text/plain")
 
-@app.post("/get_CA_public_key")
+@app.get("/get_CA_public_key")
 async def revoke_cert_status():
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
 

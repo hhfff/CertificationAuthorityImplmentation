@@ -35,8 +35,6 @@ class CertificationAuthority():
             self.rsa_private_key=util.generate_ras_key()
             util.save_rsa_private_key(util.CA_data_path,self.name,self.rsa_private_key)
             
-       
-            
         #load certificate
         if os.path.isfile(f"{util.CA_data_path}{name}.crt"):
             self.ca_cert=util.load_X509_cert(util.CA_data_path,name)
@@ -49,9 +47,12 @@ class CertificationAuthority():
             #print("intermediate")
             # need use request library to send api request to get cert sign, now eveything is in local machine, actual will use domain name
             if cur_env=="server":
+                print(f'getting cert from {top_CA_name}')
                 url=f"http://{top_CA_name}:80/issue_cert"
                 response = requests.post(url,files={'csr_file':self.create_CSR().public_bytes(serialization.Encoding.PEM)})
                 self.save_cert(response.content)
+                print(f'cert saved')
+
         else:
             pass
 

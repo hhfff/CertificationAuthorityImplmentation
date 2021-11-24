@@ -22,6 +22,39 @@ services:
       - CA_TYPE=intermediate
       - CA_CUR_ENV=server
       - CA_TOP_NAME=ca_root
+  ca2:
+    container_name: ca2
+    ports:
+      - "8002:80"
+    image: cav1:latest
+    restart: unless-stopped
+    environment:
+      - CA_NAME=ca2
+      - CA_TYPE=intermediate
+      - CA_CUR_ENV=server
+      - CA_TOP_NAME=ca_root
+  ca1_1:
+    container_name: ca1_1
+    ports:
+      - "8003:80"
+    image: cav1:latest
+    restart: unless-stopped
+    environment:
+      - CA_NAME=ca1_1
+      - CA_TYPE=intermediate
+      - CA_CUR_ENV=server
+      - CA_TOP_NAME=ca1
+  ca2_2:
+    container_name: ca2_2
+    ports:
+      - "8004:80"
+    image: cav1:latest
+    restart: unless-stopped
+    environment:
+      - CA_NAME=ca2_2
+      - CA_TYPE=intermediate
+      - CA_CUR_ENV=server
+      - CA_TOP_NAME=ca2
 networks:
     default:
        external:
