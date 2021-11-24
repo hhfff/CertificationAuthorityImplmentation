@@ -16,6 +16,9 @@ One of the widely used certificate is known as the X509 certificate. X509 certif
 
 When a entity wants a signed certificate, they have to request from a CA using a Certificate Signing Request (CSR). The entity have to first generate a private and public key pair. The entity will then use the private key to sign the CSR. The CSR contains the public key of the entity, entity information, Distinguished Name (DN) of the entity. Once the CA receives the CSR, it will then validate it using a Registration Authority (RA), this includes signing the certificate using the CA's private key. The CA then issues the signed certificate that has the entity's DN and public key and CA's DN.
 
+![Chain Of Trust](https://upload.wikimedia.org/wikipedia/commons/0/02/Chain_Of_Trust.svg)
+File:Chain Of Trust.svg - Wikimedia Commons. (2020). Retrieved 24 November 2021, from https://commons.wikimedia.org/wiki/File:Chain_Of_Trust.svg
+
 # Design
 The certificate authority use 3-tier hierarchy, there is a root CA and two levels of intermediate CAs, in which the lowest layer will issue certificate to end entities.
 
