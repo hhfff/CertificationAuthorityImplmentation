@@ -8,6 +8,7 @@ Certificate Authority (CA) verifies websites (and other entities) so that you kn
 The certificate authority use 3-tier hierarchy, there is a root CA and two levels of intermediate CAs, in which the lowest layer will issue certificate to end entities.
 
 ![Screenshot from 2021-11-24 12-12-43](https://user-images.githubusercontent.com/7097606/143174026-dfc7c921-7582-4cf2-82c8-0cfbc98232a7.png)
+
 This project use docker-compose to deploy all server in a standalone machine, to mimic the actual server deployment, but we are using port instead of domain name. Each server  communicate to each other in the ca_network by using http://hostname:80. The hostname refer to ca_root, ca1  indicate in the image above. 
 
 **The intermediate CA will generate RSA key and get certificate from 1 level above when first time called, and save for later use. Only ca_root use self signed certificate when first time called.**
@@ -59,6 +60,8 @@ http://127.0.0.1:8000/docs
 **Need install docker first**
 
 In the projetc folder, build docker image using dockerfile, and create ca_network
+
+**Make sure the folder CA_data doesn't contain any .key .crt and .crl file, if not, they will copy and use this file in docker instead to generate a new file**
 ```
 $ docker build -t cav1 .
 $ docker network create ca_network
@@ -72,9 +75,11 @@ $ docker-compose up
 delete the container if dont want it anymore or reset
 ```
 $ docker-compose rm
+```
+delete docker image if have new source code or complete remove from own system
+```
 $ docker rmi cav1
 ```
-
 check container status and use container uterminal
 1. use docker ps to get container id or name
 2. replace container-name with id or name
@@ -82,7 +87,7 @@ check container status and use container uterminal
 $ docker ps
 $ docker exec -it container-name sh
 ```
-(optional) docker swarm, create multiple instance for each server
+### (optional) docker swarm, create multiple instance for each server
 ```
 ```
 ### Manually run each container 

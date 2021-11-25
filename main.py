@@ -60,24 +60,27 @@ async def revoke_cert(crt_file: UploadFile = File(...)):
     if result:
         return JSONResponse(content={'msg':msg},status_code=200)
     else:
-        return JSONResponse(content={'msg':msg},status_code=406)
+        return JSONResponse(content={'msg':msg},status_code=400)
 
 @app.get("/revoke_cert_status")
 async def revoke_cert_status(crt_file: UploadFile = File(...)):
     cert=x509.load_pem_x509_certificate(crt_file.file.read())
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
-    result=ca.check_certificate_revoke_status(cert)
+    result,msg=ca.check_certificate_revoke_status(cert)
     if result:
-        return JSONResponse(content={'msg':'Already revoke'},status_code=200)
+        return JSONResponse(content={'msg':msg},status_code=200)
     else:
-        return JSONResponse(content={'msg':'Not revoke'},status_code=406)
+        return JSONResponse(content={'msg':msg},status_code=400)
 
 
 # todo havent test
 @app.get("/get_CA_cert")
 async def ca_cert():
     ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
-    cert_data=ca.get_CA_cert().public_bytes(serialization.Encoding.PEM) #in bytes format
+    status,cert=ca.get_CA_cert()
+    if status == False:
+        return JSONResponse(content={'msg':f"{cert}"},status_code=400)
+    cert_data=cert.public_bytes(serialization.Encoding.PEM) #in bytes format
     return PlainTextResponse(cert_data,media_type="text/plain")
 
 @app.get("/get_CA_public_key")
@@ -86,6 +89,28 @@ async def revoke_cert_status():
 
     #convert to bytes
     return PlainTextResponse(ca.get_public_key(),media_type="text/plain")
+
+@app.post("/delete_ca_key")
+async def delete_ca_key():
+    ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
+    status,msg=ca.delete_ca_key()
+
+    if status:
+        return JSONResponse(content={'msg':msg},status_code=200)
+    else:
+        return JSONResponse(content={'msg':msg},status_code=400)
+
+@app.post("/revoke_ca_cert")
+async def revoke_ca_cert():
+    ca=CertificationAuthority(CA_name,type=CA_type,cur_env=CA_cur_env,top_CA_name=CA_top_name)
+    status,msg=ca.revoke_ca_cert()
+
+    if status:
+        return JSONResponse(content={'msg':msg},status_code=200)
+    else:
+        return JSONResponse(content={'msg':msg},status_code=400)
+
+
     
 
 

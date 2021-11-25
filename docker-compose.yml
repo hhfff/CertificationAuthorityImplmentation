@@ -7,7 +7,7 @@ services:
     image: cav1:latest
     restart: unless-stopped
     environment:
-      - CA_NAME=root
+      - CA_NAME=ca_root
       - CA_TYPE=root
       - CA_CUR_ENV=server
       - CA_TOP_NAME=nil
@@ -45,13 +45,13 @@ services:
       - CA_CUR_ENV=server
       - CA_TOP_NAME=ca1
   ca2_2:
-    container_name: ca2_2
+    container_name: ca2_1
     ports:
       - "8004:80"
     image: cav1:latest
     restart: unless-stopped
     environment:
-      - CA_NAME=ca2_2
+      - CA_NAME=ca2_1
       - CA_TYPE=intermediate
       - CA_CUR_ENV=server
       - CA_TOP_NAME=ca2

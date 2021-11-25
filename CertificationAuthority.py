@@ -18,6 +18,8 @@ class CertificationAuthority():
     def __init__(self,name,type="root",cur_env="code",top_CA_name=None) -> None:
         self.name=name
         self.type=type
+        self.top_CA_name=top_CA_name
+        self.cur_env=cur_env
         self.issuer = x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u"SG"),
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"Singapore"),
@@ -26,32 +28,39 @@ class CertificationAuthority():
             x509.NameAttribute(NameOID.COMMON_NAME, u"{name}".format(name=self.name)),
         ])
 
+        
+            
+        
+    def load_key_file(self):
         # loading key and cert
-        if os.path.isfile(f"{util.CA_data_path}{name}.key"):
+        if os.path.isfile(f"{util.CA_data_path}{self.name}.key"):
             # print("load")
             # load private key
-            self.rsa_private_key=util.load_rsa_private_key(util.CA_data_path,name)
+            self.rsa_private_key=util.load_rsa_private_key(util.CA_data_path,self.name)
         else:
             self.rsa_private_key=util.generate_ras_key()
             util.save_rsa_private_key(util.CA_data_path,self.name,self.rsa_private_key)
-            
+    
+    def load_cert_file(self):
         #load certificate
-        if os.path.isfile(f"{util.CA_data_path}{name}.crt"):
-            self.ca_cert=util.load_X509_cert(util.CA_data_path,name)
-        elif type == 'root':
+        if os.path.isfile(f"{util.CA_data_path}{self.name}.crt"):
+            self.ca_cert=util.load_X509_cert(util.CA_data_path,self.name)
+        elif self.type == 'root':
             #need generate own rsa key becasue key file not exist, this is for the root, which is self sign
             #print("self sign")
             self.self_sign_cert()
-        elif type == 'intermediate':
+        elif self.type == 'intermediate':
             #intermideiate CA, ask 1 level above to sign, which is top_ca
             #print("intermediate")
             # need use request library to send api request to get cert sign, now eveything is in local machine, actual will use domain name
-            if cur_env=="server":
-                print(f'getting cert from {top_CA_name}')
-                url=f"http://{top_CA_name}:80/issue_cert"
+            if self.cur_env=="server":
+                print(f'getting cert from {self.top_CA_name}')
+                url=f"http://{self.top_CA_name}:80/issue_cert"
                 response = requests.post(url,files={'csr_file':self.create_CSR().public_bytes(serialization.Encoding.PEM)})
                 self.save_cert(response.content)
                 print(f'cert saved')
+
+                self.ca_cert=x509.load_pem_x509_certificate(response.content)
 
         else:
             pass
@@ -60,7 +69,7 @@ class CertificationAuthority():
     def load_crl(self):
         #by right should be in memory
         builder = x509.CertificateRevocationListBuilder()
-        builder = builder.issuer_name(self.ca_cert.issuer)
+        builder = builder.issuer_name(self.issuer)
         builder = builder.last_update(datetime.datetime.today())
         builder = builder.next_update(datetime.datetime.today())
         crl=None
@@ -85,6 +94,8 @@ class CertificationAuthority():
         #verify applicant signaure against public key
         # if not csr.is_signature_valid():
         #     pass
+        self.load_key_file()
+        self.load_cert_file()
 
         builder = x509.CertificateBuilder().subject_name(
                 csr.subject
@@ -114,7 +125,7 @@ class CertificationAuthority():
             )
 
         cert=builder.sign(self.rsa_private_key, hashes.SHA256())
-
+        
         #public byte: The data that can be written to a file or sent over the network to be verified by clients.
         return cert.public_bytes(serialization.Encoding.PEM)
         
@@ -124,9 +135,10 @@ class CertificationAuthority():
         if cert_issuer!= self.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value:
             return False, f"The certificate was not issue by this server, the issuer is {cert_issuer}"
         # verify cert signature
-        if not util.verify_cert_signature(cert_to_revoke,self.get_public_key()):
+        self.load_key_file()
+        self.load_cert_file()
+        if not util.verify_cert_signature(cert_to_revoke,self.rsa_private_key.public_key()):
             return False, "Wrong certificate signature"
-
 
         crl,builder=self.load_crl()
         ret = crl.get_revoked_certificate_by_serial_number(cert_to_revoke.serial_number)
@@ -143,16 +155,27 @@ class CertificationAuthority():
             return False, 'Already revoke'
         
     def check_certificate_revoke_status(self,cert_to_check):
+        #check cert issuer same as this ca
+        cert_issuer=cert_to_check.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        if cert_issuer!= self.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value:
+            return False, f"The certificate was not issue by this server, the issuer is {cert_issuer}"
+        # verify cert signature
+        self.load_key_file()
+        #self.load_cert_file()
+        if not util.verify_cert_signature(cert_to_check,self.rsa_private_key.public_key()):
+            return False, "Wrong certificate signature"
+
         crl,builder=self.load_crl()
         ret = crl.get_revoked_certificate_by_serial_number(cert_to_check.serial_number)
         #if not revoke then add to revoke list
         if not isinstance(ret, x509.RevokedCertificate):  
-            return False
+            return False, 'Not revoke'
         else:
-            return True
+            return True, 'Already revoke'
         
 
     def get_public_key(self):
+        self.load_key_file()
         return self.rsa_private_key.public_key().public_bytes(
                 serialization.Encoding.PEM,
 
@@ -162,11 +185,16 @@ class CertificationAuthority():
                 serialization.PublicFormat.SubjectPublicKeyInfo
             )
 
+    #always return a cert, if dont have, crreate a new one
     def get_CA_cert(self):
-        return self.ca_cert
+        # if not os.path.isfile(f"{util.CA_data_path}{self.name}.crt"):
+        #     return False,"No certificate file exist"
+        self.load_cert_file()
+        return True, self.ca_cert
 
     
     def create_CSR(self):
+        self.load_key_file()
         csr = x509.CertificateSigningRequestBuilder().subject_name(self.issuer).add_extension(
                 x509.SubjectAlternativeName([
                     # Describe what sites we want this certificate for.
@@ -186,7 +214,6 @@ class CertificationAuthority():
 
     #for root server only
     def self_sign_cert(self):
-        
         subject = self.issuer
 
         self.ca_cert = x509.CertificateBuilder().subject_name(
@@ -211,7 +238,45 @@ class CertificationAuthority():
         ).sign(self.rsa_private_key, hashes.SHA256())
         # Write our certificate out to disk.
         util.save_X509_cert(util.CA_data_path,self.name,self.ca_cert)
-    
+
+    def delete_ca_key(self):
+        # need remove  cert file too?, key is gone, why retain cert file
+        try:
+            print("try delete key file")
+            os.remove(util.CA_data_path+self.name+".key")
+            print("Key file deleted")
+            #self.revocate_certificate()
+        except  FileNotFoundError:
+            return False, "Key file not found error"
+        return True, "Success delete key file, will get new key on next request"
+
+    def revoke_ca_cert(self):
+        # if self.type == "root":
+        #     return False,"Can't revoke root certificate"
+        if self.top_CA_name is None:
+            return False,"Can't revoke root certificate"
+        
+        if not os.path.isfile(f"{util.CA_data_path}{self.name}.crt"):
+            return False,"No certificate file exist"
+        self.load_cert_file()
+
+        url=f"http://{self.top_CA_name}:80/revoke_cert"
+        response = requests.post(url,files={'crt_file':self.ca_cert.public_bytes(serialization.Encoding.PEM)})
+        if response.status_code ==200:
+            #successfule revoke, deletecert file
+            print("revoke ca cert success")
+            try:
+                print("try delete cert file")
+                os.remove(util.CA_data_path+self.name+".crt")
+                print("Cert file delete")
+            except  FileNotFoundError:
+                return False, "Cert file not found error"
+            return True,"CA cert revoked, will get new cert on next request"
+        return False,f"Error when revoke cert from {self.top_CA_name}, {response.content}"
+
+
+
+        
 
 
     
