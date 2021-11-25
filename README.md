@@ -49,7 +49,7 @@ These are the library we use, all specfic in requirtment.txt
 - [python-multipart](https://pypi.org/project/python-multipart/) for certificate and CSR upload to CA server
 - [requests](https://docs.python-requests.org/en/latest/) for testing API endpoints in python code
 
-Docker allow us build, share and run any app, anywhere
+This demo using the docker-compose to deploy the CA hierarchy in the image.
 
 
 
