@@ -3,11 +3,11 @@ Through this project, we hope to understand more about Certification Authority (
 
 Key objectives of this project:
 
--Background study on CA and digital certificates
+- Background study on CA and digital certificates
 
--Building a X509 digital certificate that support certification and revocation of submitted public keys, and api for certificate verification
+- Building a X509 digital certificate that support certification and revocation of submitted public keys, and api for certificate verification
 
--Also supports Hierarchical Certificate Issue and Revocation, and public key generation
+- Also supports Hierarchical Certificate Issue and Revocation, and public key generation
 
 # Research
 Certification Authority (CA) are credible entities that issues digital certificates. Digital certificates contains the identity of an entity online and this identity is validated by a CA. The role of a CA is important as it allows trusted transactions to happen on the internet. The easiest way for users to identify if they are visiting an official website is to look at the issued certificate of the particular website.
