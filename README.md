@@ -1,9 +1,24 @@
 # Motivation
-Certificate Authority (CA) verifies websites (and other entities) so that you know who you’re communicating with online
+Through this project, we hope to understand more about Certification Authority (CA), use case of digital certificates and also why is digital certificates an important pillar in the internet infrastructure today. 
 
+Key objectives of this project:
+
+-Background study on CA and digital certificates
+
+-Building a X509 digital certificate that support certification and revocation of submitted public keys, and api for certificate verification
+
+-Also supports Hierarchical Certificate Issue and Revocation, and public key generation
 
 # Research
- x509 data, hierarchy, ssl cert, 
+Certification Authority (CA) are credible entities that issues digital certificates. Digital certificates contains the identity of an entity online and this identity is validated by a CA. The role of a CA is important as it allows trusted transactions to happen on the internet. The easiest way for users to identify if they are visiting an official website is to look at the issued certificate of the particular website.
+
+One of the widely used certificate is known as the X509 certificate. X509 certificate is a type of public key certificate where is links the information of an entity and public key using a digital signature. There are mainly two types of X509 certificate, a CA certificate and a end entity certificate. At the highest level is a Root CA certificate followed by one/many Intermediate CA certificate and ending with one/many end entity certificate. The Root CA certificate will first self-sign their own certificate before it issues one/many certificate to the Intermediate CA. The Intermediate CA after it gets the certificate from the Root CA/ other Intermediate CA, it can then issue certificates to end entity certificates/ other Intermediate CA. The end entity cannot issue certificates and can only request certificate from Intermediate CA.
+
+When a entity wants a signed certificate, they have to request from a CA using a Certificate Signing Request (CSR). The entity have to first generate a private and public key pair. The entity will then use the private key to sign the CSR. The CSR contains the public key of the entity, entity information, Distinguished Name (DN) of the entity. Once the CA receives the CSR, it will then validate it using a Registration Authority (RA), this includes signing the certificate using the CA's private key. The CA then issues the signed certificate that has the entity's DN and public key and CA's DN.
+
+![Chain Of Trust](https://upload.wikimedia.org/wikipedia/commons/0/02/Chain_Of_Trust.svg)
+File:Chain Of Trust.svg - Wikimedia Commons. (2020). Retrieved 24 November 2021, from https://commons.wikimedia.org/wiki/File:Chain_Of_Trust.svg
+
 # Design
 The certificate authority use 3-tier hierarchy, there is a root CA and two levels of intermediate CAs, in which the lowest layer will issue certificate to end entities.
 
