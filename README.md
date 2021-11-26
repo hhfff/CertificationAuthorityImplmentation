@@ -26,9 +26,13 @@ The certificate authority use 3-tier hierarchy, there is a root CA and two level
 
 This project use docker-compose to deploy all server in a standalone machine, to mimic the actual server deployment, but we are using port instead of domain name. Each server  communicate to each other in the ca_network by using http://hostname:80. The hostname refer to ca_root, ca1  indicate in the image above. 
 
+
+To get certificate, all client , include intermediate CA, must create certificate sign request(CSR) and sign with their private key. Usually, the certificate issue and revoke require staff to review , but here we just issue and revoke the cert when request.
+
 **The intermediate CA will generate RSA key and get certificate from 1 level above when first time called, and save for later use. Only ca_root use self signed certificate when first time called.**
 
-To get certificate, all client , include intermediate CA, must create certificate sign request(CSR) and sign with their private key. Usually, the certificate issue and revoke require staff to review , but here we just issue and revoke the cert once request.
+Intemediate server will get certificate from level above automaticatlly. The endpoint /revoke_ca_cert used by the intermediat CA to revoke it's certificate. Cert file deleted after revoke, but the server will get a new certficate at next request if cert file not found.
+
 
 During testing, call the REST API using url http://127.0.0.1:**port**, the port is 8000 for ca_root, 8001 for ca1 and so on. Use http://127.0.0.1:8000/docs to get all API endpoint, all server has same API endpoints.
 
