@@ -96,7 +96,9 @@ class CertificationAuthority():
         #     pass
         self.load_key_file()
         self.load_cert_file()
-
+        # maybe can verify csr signature, assume they are always correct
+        # if not csr.is_signature_valid():
+        #     return None
         builder = x509.CertificateBuilder().subject_name(
                 csr.subject
             ).issuer_name(
@@ -139,7 +141,7 @@ class CertificationAuthority():
         self.load_cert_file()
         if not util.verify_cert_signature(cert_to_revoke,self.rsa_private_key.public_key()):
             return False, "Wrong certificate signature"
-
+        #certificate revoacion list
         crl,builder=self.load_crl()
         ret = crl.get_revoked_certificate_by_serial_number(cert_to_revoke.serial_number)
         #if not revoke then add to revoke list

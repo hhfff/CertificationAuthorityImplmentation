@@ -95,7 +95,7 @@ delete the container if dont want it anymore or reset
 ```
 $ docker-compose rm
 ```
-delete docker image if have new source code or complete remove from own system
+delete docker image if have change in source code or want complete remove from own system
 ```
 $ docker rmi cav1
 ```
