@@ -53,7 +53,7 @@ These are the library we use, all specfic in requirtment.txt
 - [python-multipart](https://pypi.org/project/python-multipart/) for certificate and CSR upload to CA server
 - [requests](https://docs.python-requests.org/en/latest/) for testing API endpoints in python code
 
-This demo using the docker-compose to deploy the CA hierarchy in the image.
+This project using docker-compose to deploy the CA hierarchy in the pictur above.
 
 
 
@@ -78,9 +78,9 @@ http://127.0.0.1:8000/docs
 ## Use docker to create CA servers
 **Need install docker first**
 
-In the projetc folder, build docker image using dockerfile, and create ca_network
+In the project folder, build docker image using dockerfile, and create ca_network
 
-**Make sure the folder CA_data doesn't contain any .key .crt and .crl file, if not, they will copy and use this file in docker instead to generate a new file**
+**Make sure the folder CA_data doesn't contain any .key .crt and .crl file, if not, they will copy and use these file in dockercontainer instead to generate a new file**
 ```
 $ docker build -t cav1 .
 $ docker network create ca_network
